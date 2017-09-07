@@ -1,9 +1,25 @@
+const os = require('os')
+const Promise = require('bluebird')
 const execFile = require('child_process').execFile
-const exec = require('child_process').exec
 const platform = require('os').platform()
 const path = require('path')
 const wmic = platform === 'win32' ? path.join(process.env.SystemRoot, 'System32', 'wbem', 'wmic.exe') : null
-const cmd = 'tasklist /FO csv /nh'
+
+const caller = () => {
+  const percentages = []
+  const timerId = setInterval(() => {
+    if (percentages.length <= 20) {
+      getPercentage((err, res) => { if (err) { console.error(err) } percentages.push(res) })
+    } else {
+      const average = percentages.reduce((previous, current) => {
+        return current + previous
+      }, 0) / percentages.length
+      console.log(average)
+      clearInterval(timerId)
+    }
+  }, 1000)
+  return percentages
+}
 
 const getPercentage = (cb) => {
   try {
@@ -20,32 +36,9 @@ const getPercentage = (cb) => {
   }
 }
 
-const getMemoryUsage = (cb) => {
-  try {
-    exec(cmd, (error, res, stderr) => {
-      if (error || stderr) {
-        throw error
-      } else {
-        let result = res.match(/[^\r\n]+/g).map((x) => {
-          let sum = +x.split('","')[4].replace(/[^\d]/g, '')
-          return (!isNaN(sum) && typeof sum === 'number') ? sum : 0
-        }).reduce((prev, current) => {
-          return prev + current
-        })
-        cb(null, result / (1024 * 1024))
-      }
-    })
-  } catch (error) {
-    console.log(error)
-  }
+const getMemoryUsage = () => {
+  console.log(((os.totalmem() - os.freemem()) / (1024 * 1024 * 1024)).toFixed(2))
+  return Promise.resolve(((os.totalmem() - os.freemem()) / (1024 * 1024 * 1024)).toFixed(2))
 }
 
-getMemoryUsage((err, size) => {
-  if (err) return console.log('fuck')
-  console.log('RAM usage: ' + size + ' GB')
-})
-
-getPercentage((err, percentage) => {
-  if (err) return console.log('fuck')
-  console.log('CPU usage: ' + percentage + '%')
-})
+caller()
