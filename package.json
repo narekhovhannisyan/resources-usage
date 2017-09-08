@@ -16,7 +16,5 @@
     "url": "https://github.com/narekhovhannisyan/cpuLoad/issues"
   },
   "homepage": "https://github.com/narekhovhannisyan/cpuLoad#readme",
-  "dependencies": {
-    "bluebird": "^3.5.0"
-  }
+  "dependencies": {}
 }
