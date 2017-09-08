@@ -19,7 +19,7 @@ const average = (arr) => {
   })
 }
 
-const logResourcesUsage = (callCount, interval) => {
+const resourcesUsage = (callCount, interval, cb) => {
   const cpuLoadPercentages = []
   const memoryUsagePercentages = []
   const timerId = setInterval(() => {
@@ -32,12 +32,18 @@ const logResourcesUsage = (callCount, interval) => {
       clearInterval(timerId)
       const cpuPercentage = average(cpuLoadPercentages)
       const memoryUsagePercentage = average(memoryUsagePercentages)
-      console.log('CPU usage percentage: ' + (cpuPercentage / cpuLoadPercentages.length).toFixed(2))
-      console.log('Memory usage in GB: ' + (memoryUsagePercentage / memoryUsagePercentages.length).toFixed(2))
+      const statistics = {
+        cpuPercentage: Number((cpuPercentage / cpuLoadPercentages.length).toFixed(2)),
+        memoryUsage: Number((memoryUsagePercentage / memoryUsagePercentages.length).toFixed(2))
+      }
+      cb(null, statistics)
     }
   }, interval)
 }
 
+// test
+// resourcesUsage(5, 1000, (err, res) => { console.log(res) })
+
 module.exports = {
-  logResourcesUsage
+  resourcesUsage
 }
