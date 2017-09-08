@@ -1,12 +1,10 @@
 const os = require('os')
-const Promise = require('bluebird')
-const execFile = require('child_process').execFile
 const execFileSync = require('child_process').execFileSync
 const platform = require('os').platform()
 const path = require('path')
 const wmic = platform === 'win32' ? path.join(process.env.SystemRoot, 'System32', 'wbem', 'wmic.exe') : null
 
-const getCpuPercentage = () => {
+const getWindowsCpuPercentage = () => {
   const cpuLoadPercentage = execFileSync(wmic, ['cpu', 'get', 'loadpercentage'])
   return cpuLoadPercentage.toString().match(/\d+/g)[0]
 }
@@ -26,7 +24,7 @@ const logResourcesUsage = (callCount, interval) => {
   const memoryUsagePercentages = []
   const timerId = setInterval(() => {
     if (cpuLoadPercentages.length < callCount) {
-      const cpuPercentage = getCpuPercentage()
+      const cpuPercentage = getWindowsCpuPercentage()
       cpuLoadPercentages.push(cpuPercentage)
       const memoryUsage = getMemoryUsage()
       memoryUsagePercentages.push(memoryUsage)
