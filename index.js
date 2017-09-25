@@ -1,74 +1,98 @@
 const os = require('os')
-const path = require('path')
-const platform = require('os').platform()
-const execFileSync = require('child_process').execFileSync
-const wmic = platform === 'win32' ? path.join(process.env.SystemRoot, 'System32', 'wbem', 'wmic.exe') : null
 
-const cpuAverage = () => {
-  let totalIdle = 0, totalTick = 0
-  const cpus = os.cpus()
-  for(let i = 0, len = cpus.length; i < len; i++) {
-    const cpu = cpus[i]
-    for(type in cpu.times) {
-      totalTick += cpu.times[type]
-    }     
-    totalIdle += cpu.times.idle
-  }
-  return {idle: totalIdle / cpus.length,  total: totalTick / cpus.length}
-}
-
-const getWindowsCpuPercentage = () => {
-  const cpuLoadPercentage = execFileSync(wmic, ['cpu', 'get', 'loadpercentage'])
-  return cpuLoadPercentage.toString().match(/\d+/g)[0]
-}
-
-const getMemoryUsage = () => {
-  return ((os.totalmem() - os.freemem()) / (1024 * 1024 * 1024)).toFixed(2)
-}
-
-const average = (arr) => {
-  return arr.reduce((sum, current) => {
-    return Number(sum) + Number(current)
-  })
+/**
+ * @returns {number} - used memory
+ * @description getUsedMemory function returns used RAM memory
+ */
+const getUsedMemory = () => {
+  return os.totalmem() - os.freemem()
 }
 
 /**
- * gets object with two properties: cpuPercentage and memoryUsage
- * cpuPercentages shows usage in percents
- * memoryUsage shows RAM memory usage in gb's
- * @param {*} callCount call count in interval
- * @param {*} interval interval in milliseconds
- * @param {*} cb call back function
+ * @param {number} byte - byte to convert
+ * @return {object} - object that contains byte size and unit
+ * @description byteTo function converts byte into kb, mb, gb depending from size
+ */
+const byteTo = (byte) => {
+  const arr = ['byte', 'kb', 'mb', 'gb', 'tb']
+  const counter = 0
+  const getPowAndMult = (byte, counter) => {
+    if (byte >= 1024) {
+      return getPowAndMult(byte / 1024, counter + 1)      
+    } else {
+      return {
+        size: Number(byte).toFixed(3),
+        unit: arr[counter]
+      }
+    }
+  }
+  return getPowAndMult(byte, 0)
+}
+/**
+ * @returns {object}
+ * @description cpuAverage function returns object that contains average of idle mode and total per cpus
+ */
+const cpuAverage = () => {
+  let idleModeTime = 0
+  let totalTime = 0
+  const cpus = os.cpus()
+  for (let i = 0; i < cpus.length; i++) {
+    for (mode in cpus[i].times) {
+      totalTime += cpus[i].times[mode]
+    }     
+    idleModeTime += cpus[i].times.idle
+  }
+  return { 
+    idle: idleModeTime / cpus.length,
+    total: totalTime / cpus.length
+  }
+}
+
+/**
+ * @param {array} arr - array of numbers
+ * @return {number} - average of array
+ * @description arrayAverage function returns average of an array (converting every character to number)
+ */
+const arrayAverage = (arr) => {
+  const sum = arr.reduce((sum, current) => {
+    return Number(sum) + Number(current)
+  })
+  return sum / arr.length
+}
+
+/**
+ * @param {number} callCount - call count in interval
+ * @param {number} interval -  interval in milliseconds
+ * @param {function} cb - call back function
+ * @description gets object with two properties: cpuPercentage and memoryUsage
  */
 const resourcesUsage = (callCount, interval, cb) => {
-  const cpuLoadPercentages = []
-  const memoryUsagePercentages = []
+  /* cpuLoadPercs - array of cpu load percentages, usedMemoryPercs - array of usedMemory percentages */
+  const cpuLoadPercs = [], usedMemoryPercs = []
   const timerId = setInterval(() => {
-    if (cpuLoadPercentages.length < callCount) {
-    var startMeasure = cpuAverage()
+    if (cpuLoadPercs.length < callCount) {
+    const startMeasure = cpuAverage()
     setTimeout(() => { 
-      const endMeasure = cpuAverage(); 
+      const endMeasure = cpuAverage()
       const idleDifference = endMeasure.idle - startMeasure.idle
       const totalDifference = endMeasure.total - startMeasure.total
-      const percentageCPU = 100 - ~~(100 * idleDifference / totalDifference)
-      cpuLoadPercentages.push(percentageCPU)
+      const cpuLoad = 100 - ~~(100 * idleDifference / totalDifference)
+      cpuLoadPercs.push(cpuLoad)
     }, 100)
-      const memoryUsage = getMemoryUsage()
-      memoryUsagePercentages.push(memoryUsage)
+      const memoryUsage = getUsedMemory()
+      usedMemoryPercs.push(memoryUsage)
     } else {
       clearInterval(timerId)
-      const cpuPercentage = average(cpuLoadPercentages)
-      const memoryUsagePercentage = average(memoryUsagePercentages)
-      const statistics = {
-        cpuPercentage: Number((cpuPercentage / cpuLoadPercentages.length).toFixed(2)),
-        memoryUsage: Number((memoryUsagePercentage / memoryUsagePercentages.length).toFixed(2))
+      const stat = {
+        cpuLoadPercentage: arrayAverage(cpuLoadPercs),
+        memoryUsage: byteTo(arrayAverage(usedMemoryPercs))
       }
-      cb(null, statistics)
+      cb(null, stat)
     }
   }, interval)
 }
 
-// test
+/* test */
 // resourcesUsage(5, 1000, (err, res) => { console.log(res) })
 
 module.exports = {
