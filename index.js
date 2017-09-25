@@ -1,36 +1,36 @@
 const os = require('os')
 
 /**
- * @returns {number} - used memory
- * @description getUsedMemory function returns used RAM memory
+ * @returns {number} - Used RAM memory in bytes.
+ * @description Subtracts free memory from total memory.
  */
 const getUsedMemory = () => {
   return os.totalmem() - os.freemem()
 }
 
 /**
- * @param {number} byte - byte to convert
- * @return {object} - object that contains byte size and unit
- * @description byteTo function converts byte into kb, mb, gb depending from size
+ * @param {number} byte - Byte to be converted.
+ * @return {object} - Object that contains converted byte size and measure unit.
+ * @description Converts byte into kb, mb, gb depending on size.
  */
 const byteTo = (byte) => {
-  const arr = ['byte', 'kb', 'mb', 'gb', 'tb']
-  const counter = 0
-  const getPowAndMult = (byte, counter) => {
+  const UNITS = ['byte', 'kb', 'mb', 'gb', 'tb']
+  const getPowAndMult = (byte, counter = 0) => {
     if (byte >= 1024) {
       return getPowAndMult(byte / 1024, counter + 1)      
     } else {
       return {
         size: Number(byte).toFixed(3),
-        unit: arr[counter]
+        unit: UNITS[counter]
       }
     }
   }
-  return getPowAndMult(byte, 0)
+  return getPowAndMult(byte)
 }
+
 /**
- * @returns {object}
- * @description cpuAverage function returns object that contains average of idle mode and total per cpus
+ * @returns {object} - Object that contains cpu's idle mode time average and cpu's mode total time average.
+ * @description Looking up cpu's modes for calculating idle mode time average and mode's total time and returns object with two properties idle and total.
  */
 const cpuAverage = () => {
   let idleModeTime = 0
@@ -49,28 +49,32 @@ const cpuAverage = () => {
 }
 
 /**
- * @param {array} arr - array of numbers
- * @return {number} - average of array
- * @description arrayAverage function returns average of an array (converting every character to number)
+ * @param {number|Array} arr - Array of numbers.
+ * @return {number} - average of array.
+ * @description Calculating average of an array.
  */
-const arrayAverage = (arr) => {
-  const sum = arr.reduce((sum, current) => {
-    return Number(sum) + Number(current)
+const arrayAverage = (array) => {
+  const sum = array.reduce((sum, current) => {
+    return sum + current
   })
-  return sum / arr.length
+  return sum / array.length
 }
 
 /**
- * @param {number} callCount - call count in interval
- * @param {number} interval -  interval in milliseconds
- * @param {function} cb - call back function
- * @description gets object with two properties: cpuPercentage and memoryUsage
+ * @param {number} callCount - Function call count per interval.
+ * @param {number} interval -  Function call Interval in milliseconds.
+ * @param {function} cb - Callback function.
+ * @description Collects cpu load percentages and used memory sizes into arrays depending on interval and function call count. 
+ * Calls arrayAverage function for computing average of this arrays. 
+ * For memory usage average also used byteTo function for converting usage size unit. 
+ * ~~ bitwise operation stands for number rounding like math.floor
  */
 const resourcesUsage = (callCount, interval, cb) => {
-  /* cpuLoadPercs - array of cpu load percentages, usedMemoryPercs - array of usedMemory percentages */
-  const cpuLoadPercs = [], usedMemoryPercs = []
+  /* cpuLoadPercs - array of cpu load percentages, usedMemorySizes - array of usedMemory percentages */
+  const cpuLoadPercs = [], usedMemorySizes = []
   const timerId = setInterval(() => {
     if (cpuLoadPercs.length < callCount) {
+      /* calculating cpuLoad with two measures */
     const startMeasure = cpuAverage()
     setTimeout(() => { 
       const endMeasure = cpuAverage()
@@ -80,12 +84,12 @@ const resourcesUsage = (callCount, interval, cb) => {
       cpuLoadPercs.push(cpuLoad)
     }, 100)
       const memoryUsage = getUsedMemory()
-      usedMemoryPercs.push(memoryUsage)
+      usedMemorySizes.push(memoryUsage)
     } else {
       clearInterval(timerId)
       const stat = {
         cpuLoadPercentage: arrayAverage(cpuLoadPercs),
-        memoryUsage: byteTo(arrayAverage(usedMemoryPercs))
+        memoryUsage: byteTo(arrayAverage(usedMemorySizes))
       }
       cb(null, stat)
     }
