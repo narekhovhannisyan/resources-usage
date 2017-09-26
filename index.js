@@ -1,36 +1,15 @@
 const os = require('os')
 
 /**
- * @returns {number} - Used RAM memory in bytes.
- * @description Subtracts free memory from total memory.
+ * @returns {number} - Free memory (buffer/cache included) percentage.
+ * @description Gets free memory percentage rounding with ~~ bitwise operation.
  */
-const getUsedMemory = () => {
-  return os.totalmem() - os.freemem()
-}
-
-/**
- * @param {number} byte - Byte to be converted.
- * @return {object} - Object that contains converted byte size and measure unit.
- * @description Converts byte into kb, mb, gb depending on size.
- */
-const byteTo = (byte) => {
-  const UNITS = ['byte', 'kb', 'mb', 'gb', 'tb']
-  const getPowAndMult = (byte, counter = 0) => {
-    if (byte >= 1024) {
-      return getPowAndMult(byte / 1024, counter + 1)      
-    } else {
-      return {
-        size: Number(byte).toFixed(3),
-        unit: UNITS[counter]
-      }
-    }
-  }
-  return getPowAndMult(byte)
-}
+const getfreeMemoryPercentage = () => ~~(os.freemem() / os.totalmem() * 100)
 
 /**
  * @returns {object} - Object that contains cpu's idle mode time average and cpu's mode total time average.
- * @description Looking up cpu's modes for calculating idle mode time average and mode's total time and returns object with two properties idle and total.
+ * @description Looking up cpu's modes for calculating idle mode time average and mode's total time and returns 
+ *  object with two properties idle and total.
  */
 const cpuAverage = () => {
   let idleModeTime = 0
@@ -61,13 +40,12 @@ const arrayAverage = (array) => {
 }
 
 /**
- * @param {number} callCount - Function call count per interval.
- * @param {number} interval -  Function call Interval in milliseconds.
+ * @param {number} callCount - Measuring times per interval.
+ * @param {number} interval - Measuring interval in milliseconds.
  * @param {function} cb - Callback function.
  * @description Collects cpu load percentages and used memory sizes into arrays depending on interval and function call count. 
- * Calls arrayAverage function for computing average of this arrays. 
- * For memory usage average also used byteTo function for converting usage size unit. 
- * ~~ bitwise operation stands for number rounding like math.floor
+ *  Calls arrayAverage function for computing average of this arrays. 
+ *  ~~ bitwise operation stands for number rounding like math.floor
  */
 const resourcesUsage = (callCount, interval, cb) => {
   /* cpuLoadPercs - array of cpu load percentages, usedMemorySizes - array of usedMemory percentages */
@@ -83,22 +61,17 @@ const resourcesUsage = (callCount, interval, cb) => {
       const cpuLoad = 100 - ~~(100 * idleDifference / totalDifference)
       cpuLoadPercs.push(cpuLoad)
     }, 100)
-      const memoryUsage = getUsedMemory()
+      const memoryUsage = 100 - getfreeMemoryPercentage()
       usedMemorySizes.push(memoryUsage)
     } else {
       clearInterval(timerId)
       const stat = {
         cpuLoadPercentage: arrayAverage(cpuLoadPercs),
-        memoryUsage: byteTo(arrayAverage(usedMemorySizes))
+        memoryUsage: arrayAverage(usedMemorySizes)
       }
       cb(null, stat)
     }
   }, interval)
 }
 
-/* test */
-// resourcesUsage(5, 1000, (err, res) => { console.log(res) })
-
-module.exports = {
-  resourcesUsage
-}
+module.exports = resourcesUsage
