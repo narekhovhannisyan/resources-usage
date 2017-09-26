@@ -4,7 +4,7 @@ const os = require('os')
  * @returns {number} - Free memory (buffer/cache included) percentage.
  * @description Gets free memory percentage rounding with ~~ bitwise operation.
  */
-const getfreeMemoryPercentage = () => ~~(os.freemem() / os.totalmem() * 100)
+const getfreeMemoryPercentage = () => os.freemem() / os.totalmem() * 100
 
 /**
  * @returns {object} - Object that contains cpu's idle mode time average and cpu's mode total time average.
@@ -29,7 +29,7 @@ const cpuAverage = () => {
 
 /**
  * @param {number|Array} arr - Array of numbers.
- * @return {number} - average of array.
+ * @return {number} - Average of array.
  * @description Calculating average of an array.
  */
 const arrayAverage = (array) => {
@@ -58,7 +58,7 @@ const resourcesUsage = (callCount, interval, cb) => {
       const endMeasure = cpuAverage()
       const idleDifference = endMeasure.idle - startMeasure.idle
       const totalDifference = endMeasure.total - startMeasure.total
-      const cpuLoad = 100 - ~~(100 * idleDifference / totalDifference)
+      const cpuLoad = Number((100 - 100 * idleDifference / totalDifference).toFixed(3))
       cpuLoadPercs.push(cpuLoad)
     }, 100)
       const memoryUsage = 100 - getfreeMemoryPercentage()
@@ -67,7 +67,7 @@ const resourcesUsage = (callCount, interval, cb) => {
       clearInterval(timerId)
       const stat = {
         cpuLoadPercentage: arrayAverage(cpuLoadPercs),
-        memoryUsage: arrayAverage(usedMemorySizes)
+        memoryUsagePercentage: arrayAverage(usedMemorySizes)
       }
       cb(null, stat)
     }
