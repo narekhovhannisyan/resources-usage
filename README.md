@@ -1,8 +1,4 @@
-# service-modules-common
-
-## Services
-
-### Resource Usage API
+# Resource Usage API
 
 ResourceUsage.resourcesUsage(interval, count). 
 
@@ -15,4 +11,4 @@ Returns promise wich contains:
     busyMemoryPercentage: number
   }
   ```
-   
+ 

@@ -49,7 +49,7 @@ const arrayAverage = (array) => {
 }
 
 /**
- * @param {number} - Delay between cpu load measures 
+ * @param {number} delay - Delay between cpu load measures
  * @returns {object} - Object that contains cpuLoad and busyMemory
  * @description Calls getBusyMemoryPercentage function to get busy memory and
  *  getCpuBusyLoad function to get cpu's load
@@ -66,10 +66,9 @@ const statisticsGetter = (delay) => {
 }
 
 /**
- * @param {number} - Delay between cpu load measures 
- * @returns {number} - Cpu's current load
- * @description Asynchrony measures cpu's state,
- *  calculates difference between two measures and gets cpu busy load
+ * @param {number} delay - Delay between cpu load measures
+ * @returns {Promise.<number>} - Cpu's current load
+ * @description Asynchronously measures cpu's state, calculates difference between two measures and gets cpu busy load.
  */
 const getCpuBusyLoad = (delay) => {
   return Promise.resolve().delay(delay).then(() => cpuAverage()).then((startMeasure) => {
