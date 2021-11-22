@@ -1,20 +1,17 @@
-# ResourceUsage
+# resources-usage
 
-## resourcesUsage(interval, count).
+Module is designed to get worker load.
 
- * Interval is a total time in which you want to check statistics.
- * Count is call quantity in given interval.
- * Returns promise.
+## How to use
 
-  ```javascript
-    const ResourceUsage = require('ResourceUsage')
+`interval` is a total time in which you want to check statistics. `count` is call quantity in given interval.
 
-    ResourceUsage.resourcesUsage(interval, count).then((result) => {
+```javascript
+  const { resroucesUsage } = require('resources-usage')
 
-      /**
-       * result ->
-       *    { cpuLoadPercentage: number
-       *      busyMemoryPercentage: number }
-       */
-    }).catch()
-  ```
+  resourcesUsage(interval, count).then((result) => {
+    /**
+     * result -> { cpuLoadPercentage: number busyMemoryPercentage: number }
+     */
+  }).catch()
+```
