@@ -1,4 +1,4 @@
-const resourceUsage = require('../resources-usage')
+const resourceUsage = require('./resources-usage')
 
 describe('resources usage: ', () => {
   describe('getBusyMemoryPercentage(): ', () => {
@@ -15,18 +15,18 @@ describe('resources usage: ', () => {
     test('should be valid. Must return object with number props.', () => {
       expect.assertions(2)
       return resourceUsage.__tests__.statisticsGetter(200)
-          .then((stat) => {
-            expect(typeof stat.cpuLoad).toBe('number')
-            expect(typeof stat.busyMemory).toBe('number')
-          })
+        .then((stat) => {
+          expect(typeof stat.cpuLoad).toBe('number')
+          expect(typeof stat.busyMemory).toBe('number')
+        })
     })
 
     test('should be valid. Must return object.', () => {
       expect.assertions(1)
       return resourceUsage.__tests__.statisticsGetter(200)
-          .then((stat) => {
-            expect(typeof stat).toBe('object')
-          })
+        .then((stat) => {
+          expect(typeof stat).toBe('object')
+        })
     })
   })
 
@@ -43,7 +43,7 @@ describe('resources usage: ', () => {
 
       expect.assertions(1)
       return resourceUsage.__tests__.intervalRunner(fn, 100, 5)
-          .then((arr) => expect(arr).toEqual([0, 0, 0, 0, 0]))
+        .then((arr) => expect(arr).toEqual([0, 0, 0, 0, 0]))
     })
 
     test('should be valid. Must return empty array when call count is 0.', () => {
@@ -51,7 +51,7 @@ describe('resources usage: ', () => {
 
       expect.assertions(1)
       return resourceUsage.__tests__.intervalRunner(fn, 100, 0)
-          .then((arr) => expect(arr).toEqual([]))
+        .then((arr) => expect(arr).toEqual([]))
     })
   })
 
@@ -59,16 +59,16 @@ describe('resources usage: ', () => {
     test('should be valid. Checks if it returns object.', () => {
       expect.assertions(1)
       return resourceUsage.resourcesUsage(100, 5)
-          .then((resourceUsage) => expect(typeof resourceUsage).toBe('object'))
+        .then((resourceUsage) => expect(typeof resourceUsage).toBe('object'))
     })
 
     test('should be valid. Must return object with number props.', () => {
       expect.assertions(2)
       return resourceUsage.resourcesUsage(100, 5)
-          .then((resourceUsage) => {
-            expect(typeof resourceUsage.busyMemoryPercentage).toBe('number')
-            expect(typeof resourceUsage.cpuLoadPercentage).toBe('number')
-          })
+        .then((resourceUsage) => {
+          expect(typeof resourceUsage.busyMemoryPercentage).toBe('number')
+          expect(typeof resourceUsage.cpuLoadPercentage).toBe('number')
+        })
     })
   })
 
